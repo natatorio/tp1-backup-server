@@ -14,6 +14,9 @@ class Socket:
     def receive(self):
         return self.socket.recv(4096).decode()
 
+    def close(self):
+        self.socket.close()
+
 
 class ServerSocket(Socket):
     def __init__(self, ip, port, max_connections):

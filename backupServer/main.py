@@ -2,14 +2,29 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath('main.py')))
 from tools.socket import *
+from tools.protocol import *
 
-socket = ServerSocket("127.0.0.1",12345, 10)
+MAX_CLIENTS = 1
+MAX_PERSISTORS = 5
+PERSISTOR_PORT = 12346
 
-conn, addr = socket.accept()
+backupServerSocket = ServerSocket(os.environ["BACKUP_SERVER_IP"], int(os.environ["BACKUP_SERVER_PORT"]), MAX_CLIENTS)
 
-print("Got connection from ", addr)
-while True:
-    msg = conn.receive()
-    print("Message form ", addr, " saying: ", msg)
-    response = "Received: " + msg
-    conn.send(response)
+#persistorSocket = ServerSocket(os.environ["BACKUP_SERVER_IP"], PERSISTOR_PORT, MAX_PERSISTORS)
+returnAdress = (os.environ["BACKUP_SERVER_IP"], PERSISTOR_PORT)
+
+client, addr = backupServerSocket.accept()
+
+msg = client.receive()
+while msg:
+    request = OrderRequest(msg, returnAdress)
+    server = ClientSocket()
+    server.connect(request.get_ip(), request.get_port())
+    server.send(request.to_json())
+    response = server.receive()
+    server.close()
+    client.send(response)
+    msg = client.receive()
+
+client.close()
+backupServerSocket.close()
