@@ -8,12 +8,13 @@ REGISTER_REQUEST = "register"
 UNREGISTER_REQUEST = "unregister"
 
 class Request:
-    def __init__(self, json):
-        self.type = json["type"]
-        self.ip = json["ip"]
-        self.port = json["port"]
-        self.path = json["path"]
-        self.rate = json["rate"]
+    def __init__(self, str):
+        data = json.loads(str)
+        self.type = data["type"]
+        self.ip = data["ip"]
+        self.port = data["port"]
+        self.path = data["path"]
+        self.rate = data["rate"]
 
     def to_json(self, ret = {}):
         ret["type"] = self.type
@@ -29,25 +30,17 @@ class Request:
     def get_port(self):
         return int(self.port)
 
-class OrderRequest(Request):
-    def __init__(self, argJson, returnAdress):
-        self.returnIp = returnAdress[0]
-        self.returnPort = returnAdress[1]
-        super(OrderRequest, self).__init__(json.loads(argJson))
-        if self.type == UNREGISTER_REQUEST:
-            self.rate = "0"
+    def get_path(self):
+        return self.path
 
-    def returnIp(self):
-        return self.returnIp
+    def get_rate(self):
+        return self.rate
 
-    def returnPort(self):
-        return int(self.returnPort)
+    def is_query(self):
+        return self.type == QUERY_REQUEST
 
-    def to_json(self):
-        ret = {}
-        ret["returnIp"] = self.returnIp
-        ret["returnPort"] = self.returnPort
-        return super(OrderRequest, self).to_json(ret)
+    def is_unregister(self):
+        return self.type == UNREGISTER_REQUEST
 
 class ClientRequest(Request):
     def __init__(self, str):

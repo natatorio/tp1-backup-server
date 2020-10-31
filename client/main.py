@@ -22,7 +22,7 @@ request = ClientRequest(input())
 while not request.is_exit():
     if request.is_valid():
         socket.send(request.to_json())
-        print("Backup server response: {}".format(socket.receive()))
+        print(socket.receive())
     else:
         print("Invalid request. Try again")
     request = ClientRequest(input())

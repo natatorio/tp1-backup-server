@@ -2,9 +2,9 @@ import socket
 
 
 class Socket:
-    def __init__(self, sock = None):
-        if sock:
-            self.socket = sock
+    def __init__(self, fd = None):
+        if fd:
+            self.socket = socket.fromfd(fd, socket.AF_INET, socket.SOCK_STREAM)
         else:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -17,6 +17,9 @@ class Socket:
     def close(self):
         self.socket.close()
 
+    def fd(self):
+        return self.socket.fileno()
+
 
 class ServerSocket(Socket):
     def __init__(self, ip, port, max_connections):
@@ -26,7 +29,7 @@ class ServerSocket(Socket):
 
     def accept(self):
         socket, address = self.socket.accept()
-        return Socket(socket), address
+        return Socket(socket.fileno()), address
 
 
 class ClientSocket(Socket):

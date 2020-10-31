@@ -11,6 +11,8 @@ services:
       - BACKUP_SERVER_PORT=12345
     networks:
       - my_network
+    volumes:
+      - ./BackupRegistry:/BackupRegistry:rw
 
   client:
     container_name: client
