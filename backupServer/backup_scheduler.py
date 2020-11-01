@@ -5,6 +5,7 @@ from backup_registry_controller import *
 import backup_controller
 
 BACKUP_CONTROLLERS = 5
+MIN_LENGTH_SIMULATION = 1
 
 class Task:
     def __init__(self, entry):
@@ -30,15 +31,16 @@ class Task:
         self.remaining = self.rate
 
 class Scheduler:
-    def __init__(self, pool, taskQueue, logLock):
+    def __init__(self, poolBackupControllers, taskQueue, logLock, registryLock):
         self.tasks = []
-        self.pool = pool
+        self.poolBackupControllers = poolBackupControllers
         self.taskQueue = taskQueue
         self.logLock = logLock
+        self.registryController = BackupRegistryController(registryLock)
 
-    def update(self, registry):
+    def update(self):
         updatedTasks = []
-        for entry in registry:
+        for entry in self.registryController.fetch():
             uTask = Task(entry)
             for task in self.tasks:
                 if uTask == task:
@@ -55,20 +57,18 @@ class Scheduler:
     def __attempt_to_exec_task(self, task):
         if not task.needs_to_be_executed():
             return
-        res = self.pool.apply_async(backup_controller.main, args = (self.taskQueue, self.logLock,))
+        res = self.poolBackupControllers.apply_async(backup_controller.main, args = (self.taskQueue, self.logLock,))
         self.taskQueue.put(task)
         res.get()
         task.reschedule()
 
 def main(registryLock, logLock):
-    registryController = BackupRegistryController(registryLock)
-    with Pool(processes = BACKUP_CONTROLLERS) as pool:
+    with Pool(processes = BACKUP_CONTROLLERS) as poolBackupControllers:
         taskQueue = Manager().Queue()
-        scheduler = Scheduler(pool, taskQueue, logLock)
+        scheduler = Scheduler(poolBackupControllers, taskQueue, logLock, registryLock)
         while True:
-            registry = registryController.fetch()
-            scheduler.update(registry)
-            time.sleep(1)
+            scheduler.update()
+            time.sleep(MIN_LENGTH_SIMULATION)
             scheduler.advance()
 
 if __name__ == "__main__":
