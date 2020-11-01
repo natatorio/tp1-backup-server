@@ -7,7 +7,7 @@ from tools.protocol import *
 socket = ClientSocket()
 
 try:
-    socket.connect(os.environ["BACKUP_SERVER_IP"], int(os.environ["BACKUP_SERVER_PORT"]))
+    socket.connect(os.environ["BACKUP_SERVER_IP"], os.environ["BACKUP_SERVER_PORT"])
 except:
     print("Error connecting to backup server")
     socket.close()

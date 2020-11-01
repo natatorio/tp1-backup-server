@@ -2,7 +2,7 @@ import os
 import sys
 from threading import Lock
 from pathlib import Path
-sys.path.append(os.path.dirname(os.path.abspath('main.py')))
+sys.path.append(os.path.dirname(os.path.abspath('backup_log_controller.py')))
 from tools.protocol import *
 
 BACKUP_REGISTRY_ROOTDIR = "BackupRegistry"
@@ -11,7 +11,7 @@ REGISTRY_FILE_EXTENSION = ".txt"
 class RegistryEntry:
     def __init__(self, item):
         self.rate = int(item[1])
-        data = item[0].split(os.sep)
+        data = item[0][:-4].split(os.sep)
         self.ip = data.pop(0)
         self.port = data.pop(0)
         self.path = os.path.join(*data)
@@ -54,4 +54,4 @@ class BackupRegistryController:
         return list(map(RegistryEntry, registry.items()))
 
     def __get_full_filepath(self, request):
-        return os.path.join(self.rootDir, request.get_ip(), str(request.get_port()), request.get_path()) + REGISTRY_FILE_EXTENSION
+        return os.path.join(self.rootDir, request.get_ip(), request.get_port(), request.get_path()) + REGISTRY_FILE_EXTENSION

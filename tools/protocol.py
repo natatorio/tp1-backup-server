@@ -28,7 +28,7 @@ class Request:
         return self.ip
 
     def get_port(self):
-        return int(self.port)
+        return self.port
 
     def get_path(self):
         return self.path

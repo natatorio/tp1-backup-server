@@ -13,6 +13,7 @@ services:
       - my_network
     volumes:
       - ./BackupRegistry:/BackupRegistry:rw
+      - ./BackupLog:/BackupLog:rw
 
   client:
     container_name: client

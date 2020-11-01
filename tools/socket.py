@@ -24,7 +24,7 @@ class Socket:
 class ServerSocket(Socket):
     def __init__(self, ip, port, max_connections):
         super(ServerSocket, self).__init__()
-        self.socket.bind((ip, port))
+        self.socket.bind((ip, int(port)))
         self.socket.listen(max_connections)
 
     def accept(self):
@@ -37,4 +37,4 @@ class ClientSocket(Socket):
         super(ClientSocket, self).__init__()
 
     def connect(self, ip, port):
-        self.socket.connect((ip, port))
+        self.socket.connect((ip, int(port)))

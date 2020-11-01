@@ -30,10 +30,11 @@ class Task:
         self.remaining = self.rate
 
 class Scheduler:
-    def __init__(self, pool, taskQueue):
+    def __init__(self, pool, taskQueue, logLock):
         self.tasks = []
         self.pool = pool
         self.taskQueue = taskQueue
+        self.logLock = logLock
 
     def update(self, registry):
         updatedTasks = []
@@ -54,16 +55,16 @@ class Scheduler:
     def __attempt_to_exec_task(self, task):
         if not task.needs_to_be_executed():
             return
-        res = self.pool.apply_async(backup_controller.main, args = (self.taskQueue,))
+        res = self.pool.apply_async(backup_controller.main, args = (self.taskQueue, self.logLock,))
         self.taskQueue.put(task)
         res.get()
         task.reschedule()
 
-def main(registryLock):
+def main(registryLock, logLock):
     registryController = BackupRegistryController(registryLock)
     with Pool(processes = BACKUP_CONTROLLERS) as pool:
         taskQueue = Manager().Queue()
-        scheduler = Scheduler(pool, taskQueue)
+        scheduler = Scheduler(pool, taskQueue, logLock)
         while True:
             registry = registryController.fetch()
             scheduler.update(registry)
