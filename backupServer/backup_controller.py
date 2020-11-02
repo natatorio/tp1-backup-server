@@ -6,27 +6,30 @@ from backup_storage_controller import *
 sys.path.append(os.path.dirname(os.path.abspath('backup_controller.py')))
 from tools.socket import *
 
-def main(taskQueue, logLock):
+def main(taskQueue, logLock, solvedTasks):
     task = taskQueue.get()
     logController = BackupLogController(logLock)
     server = ClientSocket()
-    server.connect(task.ip, task.port)
+    try:
+        server.connect(task.ip, task.port)
+    except:
+        solvedTasks.append((task, False))
+        return
     server.send(task.path)
     response = json.loads(server.receive())
-    serverAvailable = response["available"]
-    if serverAvailable:
-        if response["size"] > 0:
-            server.send("Send me the file")
-            storageController = BackupStorageController(task.ip, task.path)
-            f = storageController.open()
+    print(response, task.path, flush = True)
+    if response["size"] > 0:
+        server.send("Ready to receive file")
+        storageController = BackupStorageController(task.ip, task.path)
+        f = storageController.open()
+        data = server.receive_bin()
+        while data:
+            f.write(data)
             data = server.receive_bin()
-            while data:
-                f.write(data)
-                data = server.receive_bin()
-            storageController.close(f)
-        logController.log(task.ip, response["datetime"], task.path, response["size"])
+        storageController.close(f)
+    logController.log(task.ip, response["datetime"], task.path, response["size"])
     server.close()
-    return serverAvailable
+    solvedTasks.append((task, True))
 
 if __name__ == "__main__":
     main()

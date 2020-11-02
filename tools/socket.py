@@ -31,6 +31,7 @@ class Socket:
 class ServerSocket(Socket):
     def __init__(self, ip, port, max_connections):
         super(ServerSocket, self).__init__()
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((ip, int(port)))
         self.socket.listen(max_connections)
 

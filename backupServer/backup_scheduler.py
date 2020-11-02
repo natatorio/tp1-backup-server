@@ -1,10 +1,9 @@
 import time
 from multiprocessing import Pool, Manager
-
 from backup_registry_controller import *
 import backup_controller
 
-BACKUP_CONTROLLERS = 5
+N_BACKUP_CONTROLLERS = 5
 MIN_LENGTH_SIMULATION = 1
 
 class Task:
@@ -31,10 +30,12 @@ class Task:
         self.remaining = self.rate
 
 class Scheduler:
-    def __init__(self, poolBackupControllers, taskQueue, logLock, registryLock):
+    def __init__(self, poolBackupControllers, logLock, registryLock):
+        manager = Manager()
         self.tasks = []
+        self.solvedTasks = manager.list()
         self.poolBackupControllers = poolBackupControllers
-        self.taskQueue = taskQueue
+        self.taskQueue = manager.Queue()
         self.logLock = logLock
         self.registryController = BackupRegistryController(registryLock)
 
@@ -50,22 +51,28 @@ class Scheduler:
         self.tasks = updatedTasks
 
     def advance(self):
+        for item in self.solvedTasks:
+            task, solved = item[0], item[1]
+            if solved:
+                task.reschedule()
+            self.__reschedule(task)
+            self.solvedTasks.remove(item)
         for task in self.tasks:
             task.advance()
-            self.__attempt_to_exec_task(task)
+            if task.needs_to_be_executed():
+                self.tasks.remove(task)
+                self.poolBackupControllers.apply_async(backup_controller.main, args = (self.taskQueue, self.logLock, self.solvedTasks,))
+                self.taskQueue.put(task)
 
-    def __attempt_to_exec_task(self, task):
-        if not task.needs_to_be_executed():
-            return
-        res = self.poolBackupControllers.apply_async(backup_controller.main, args = (self.taskQueue, self.logLock,))
-        self.taskQueue.put(task)
-        if res.get():
-            task.reschedule()
+    def __reschedule(self, task):
+        for t in self.tasks:
+            if t == task:
+                self.tasks.remove(t)
+        self.tasks.append(task)
 
 def main(registryLock, logLock):
-    with Pool(processes = BACKUP_CONTROLLERS) as poolBackupControllers:
-        taskQueue = Manager().Queue()
-        scheduler = Scheduler(poolBackupControllers, taskQueue, logLock, registryLock)
+    with Pool(processes = N_BACKUP_CONTROLLERS) as poolBackupControllers:
+        scheduler = Scheduler(poolBackupControllers, logLock, registryLock)
         while True:
             scheduler.update()
             time.sleep(MIN_LENGTH_SIMULATION)
