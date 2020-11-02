@@ -14,7 +14,7 @@ class BackupLogController:
         self.lock.acquire()
         Path(os.path.dirname(filePath)).mkdir(parents = True, exist_ok = True)
         f = open(filePath, "a+")
-        f.write(datetime + " " + size + "\n")
+        f.write(datetime + " " + str(size) + "\n")
         f.close()
         self.lock.release()
 

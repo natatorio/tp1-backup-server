@@ -11,9 +11,12 @@ services:
       - BACKUP_SERVER_PORT=12345
     networks:
       - my_network
+    depends_on:
+      - server1
     volumes:
-      - ./BackupRegistry:/BackupRegistry:rw
-      - ./BackupLog:/BackupLog:rw
+      - ./backupServer/BackupRegistry:/BackupRegistry:rw
+      - ./backupServer/BackupLog:/BackupLog:rw
+      - ./backupServer/BackupStorage:/BackupStorage:rw
 
   client:
     container_name: client
@@ -44,6 +47,8 @@ services:
       - SERVER_PORT=12345
     networks:
       - my_network
+    volumes:
+      - ./server/Data:/Data:rw
 
 networks:
   my_network:

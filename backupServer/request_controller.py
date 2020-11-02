@@ -22,7 +22,7 @@ class RequestController:
             client, addr = self.backupServerSocket.accept()
             msg = client.receive()
             while msg:
-                response = process_request(Request(msg))
+                response = self.process_request(Request(msg))
                 client.send(response)
                 msg = client.receive()
 
@@ -31,8 +31,8 @@ class RequestController:
 
     def process_request(self, request):
         if(request.is_query()):
-            return __process_query(request)
-        return __process_reg_order(request)
+            return self.__process_query(request)
+        return self.__process_reg_order(request)
 
     def __process_query(self, query):
         try:
@@ -42,7 +42,7 @@ class RequestController:
 
     def __process_reg_order(self, order):
         try:
-            self.registryController.persist(request)
+            self.registryController.persist(order)
             return REG_SUCCESS_MSG
         except:
             return REG_ERROR_MSG

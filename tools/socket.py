@@ -1,5 +1,6 @@
 import socket
 
+ONE_MB = 1024
 
 class Socket:
     def __init__(self, fd = None):
@@ -9,10 +10,16 @@ class Socket:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def send(self, msg):
-        return self.socket.sendall(msg.encode())
+        return self.send_bin(msg.encode())
+
+    def send_bin(self, msg):
+        return self.socket.sendall(msg)
 
     def receive(self):
-        return self.socket.recv(4096).decode()
+        return self.receive_bin().decode()
+
+    def receive_bin(self):
+        return self.socket.recv(ONE_MB)
 
     def close(self):
         self.socket.close()

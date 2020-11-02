@@ -59,8 +59,8 @@ class Scheduler:
             return
         res = self.poolBackupControllers.apply_async(backup_controller.main, args = (self.taskQueue, self.logLock,))
         self.taskQueue.put(task)
-        res.get()
-        task.reschedule()
+        if res.get():
+            task.reschedule()
 
 def main(registryLock, logLock):
     with Pool(processes = BACKUP_CONTROLLERS) as poolBackupControllers:
