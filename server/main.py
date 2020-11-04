@@ -7,7 +7,7 @@ import backup_agent_controller
 sys.path.append(os.path.dirname(os.path.abspath('main.py')))
 from tools.socket import *
 
-SECS_OF_UNAVAILABILITY = 0
+SECS_OF_UNAVAILABILITY = 10
 MAX_BACKUPS_UNTIL_UNAVAILABILITY = 5
 N_BACKUP_AGENTS = 2
 

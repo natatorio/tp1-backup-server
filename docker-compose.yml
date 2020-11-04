@@ -29,6 +29,10 @@ services:
       - BACKUP_SERVER_PORT=12345
       - SERVER_1_IP=server1
       - SERVER_1_PORT=12345
+      - SERVER_2_IP=server2
+      - SERVER_2_PORT=12345
+      - SERVER_3_IP=server3
+      - SERVER_3_PORT=12345
     stdin_open: true
     tty: true
     networks:
@@ -44,6 +48,34 @@ services:
     entrypoint: python3 server/main.py
     environment:
       - SERVER_IP=server1
+      - SERVER_PORT=12345
+    networks:
+      - my_network
+    volumes:
+      - ./server/Data:/Data:rw
+
+  server2:
+    container_name: server2
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    entrypoint: python3 server/main.py
+    environment:
+      - SERVER_IP=server2
+      - SERVER_PORT=12345
+    networks:
+      - my_network
+    volumes:
+      - ./server/Data:/Data:rw
+
+  server3:
+    container_name: server3
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    entrypoint: python3 server/main.py
+    environment:
+      - SERVER_IP=server3
       - SERVER_PORT=12345
     networks:
       - my_network

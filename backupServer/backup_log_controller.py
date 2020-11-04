@@ -10,7 +10,7 @@ class BackupLogController:
         self.lock = lock
 
     def log(self, ip, datetime, path, size):
-        filePath = self.__get__filepath(ip, path)
+        filePath = self.__get_filepath(ip, path)
         self.lock.acquire()
         Path(os.path.dirname(filePath)).mkdir(parents = True, exist_ok = True)
         f = open(filePath, "a+")
@@ -19,7 +19,7 @@ class BackupLogController:
         self.lock.release()
 
     def query(self, ip, path):
-        filePath = self.__get__filepath(ip, path)
+        filePath = self.__get_filepath(ip, path)
         if not os.path.exists(filePath): raise
         self.lock.acquire()
         f = open(filePath, "r")
@@ -28,5 +28,5 @@ class BackupLogController:
         self.lock.release()
         return response
 
-    def __get__filepath(self, ip, path):
+    def __get_filepath(self, ip, path):
         return os.path.join(self.rootDir, ip, path, LOGFILE_NAME)

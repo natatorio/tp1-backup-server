@@ -16,17 +16,18 @@ class Socket:
         return self.socket.sendall(msg)
 
     def receive(self):
-        return self.receive_bin().decode()
+        res = ""
+        chunk = self.receive_bin().decode()
+        while len(chunk) == ONE_MB:
+            res += chunk
+            chunk = self.receive_bin().decode()
+        return res + chunk
 
     def receive_bin(self):
         return self.socket.recv(ONE_MB)
 
     def close(self):
         self.socket.close()
-
-    def fd(self):
-        return self.socket.fileno()
-
 
 class ServerSocket(Socket):
     def __init__(self, ip, port, max_connections):

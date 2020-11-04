@@ -17,7 +17,7 @@ def main(taskQueue, logLock, solvedTasks):
         return
     server.send(task.path)
     response = json.loads(server.receive())
-    print(response, task.path, flush = True)
+    print(response,task.ip, task.path, flush = True)
     if response["size"] > 0:
         server.send("Ready to receive file")
         storageController = BackupStorageController(task.ip, task.path)
